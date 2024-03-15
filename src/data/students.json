@@ -1,0 +1,14 @@
+[
+    {
+      "login": "test_developer_login",
+      "repository": "test_first_name_repository"
+    },
+    {
+      "login": "test_developer_login2",
+      "repository": "test_second_name_repository"
+    },
+    {
+      "login": "test_developer_login3",
+      "repository": "test_third_name_repository"
+    }
+]

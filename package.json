@@ -1,0 +1,26 @@
+{
+  "name": "autorepos",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "clean": "rimraf dist",
+    "start": "cd ./dist && node index.js",
+    "build": "npm run clean && tsc && copyfiles -f ./.env ./src/data/*.json dist && cd ./dist && node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/inquirer": "^9.0.7",
+    "@types/node": "^20.11.25",
+    "copyfiles": "^2.4.1",
+    "dotenv": "^16.4.5",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.4.2"
+  },
+  "dependencies": {
+    "axios": "^1.6.7",
+    "inquirer": "^8.0.0"
+  }
+}

@@ -23,7 +23,6 @@ export class CreateIssues extends BaseStrategy implements IStrategy{
         }
         // получаем список репозиториев и отсеиваем по префиксу
         const repositories = await this.getRepositories();
-
         for(let repository of repositories){
             // получаем список задач и отсеиваем, чтоб не создать с одинаковым title
             const existingIssues = await this.gitLab.getIssueList(repository.id);
@@ -32,8 +31,11 @@ export class CreateIssues extends BaseStrategy implements IStrategy{
                 try {
                     if(!issueList.includes(issue.title)){
                         await this.gitLab.createIssue(repository.id, { ...issue, issue_type: issueTypes.issue });
+                        await logger.addIssue(issue.title, repository.name);
+                    } else {
+                        await logger.addSuccess(`Задача ${issue.title} уже существует в репозитории ${repository.name}`);
                     }
-                    await logger.addIssue(issue.title, repository.name);
+                    await this.delay(100);
                 } catch(e) {
                     const error = e as GitLabError;
                     await logger.addError(`Ошибка создания задачи для репозитория ${repository.name}. ${error.generalMessage}`);

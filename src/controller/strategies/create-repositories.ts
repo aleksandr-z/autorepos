@@ -40,12 +40,12 @@ export class CreateRepositories extends BaseStrategy implements IStrategy {
         const repos = await this.getRepositories();
         for(let student of students){
             const repository = await this.createRepository(`${this.prefix}${student.repository}`, repos, this.groupId);
-            // await this.delay(100);
+            await this.delay(100);
             if(repository){
                 const members = await this.getMembersByProject(repository.id, repository.name);
                 await this.addDeveloper(repository, student.login, members);
                 await this.addMaintainers(repository, maintainers, members);
-                // await this.delay(100);
+                await this.delay(100);
             }
         }
     }

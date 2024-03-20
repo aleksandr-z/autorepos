@@ -28,11 +28,11 @@ PREFIX="2024_front_" // обязательное поле
 [
     {
       "login": "first", // Логин студента
-      "repository": "front_petrov_ivan" // наименование репозитория 
+      "repository": "petrov_ivan" // наименование репозитория 
     },
     {
       "login": "second",
-      "repository": "front_ivanov_petr"
+      "repository": "ivanov_petr"
     }
 ]
 
@@ -52,31 +52,9 @@ PREFIX="2024_front_" // обязательное поле
 ```
 [
   {
-     title: 'issue1',
-     description: `<p><b>Задание №1 Верстка</b></p>
-                   <p>Сверстать страницу по макету https://www.figma.com/file/EoPfSJWnccKjPwLEvKstgv/Picto---Personal-Portfolio-Free-Template-(Community)-(Community)?type=design&node-id=2-5&mode=design&t=fPtemcZD4QVzIkdh-0
-                   </p>
-                   <br>
-                   <b>Условия:</b><br>
-                   <ol>
-                   <li>- Обязательно используем препроцессор, любой на выбор (sass, less, stylus и пр.)</li>
-                   <li>- Обязательно реализуем адаптивную верстку (либо с брекпоинтами, либо резиновую на выбор)</li>
-                   </ol>
-                   <p><b>Необязательно, но будет плюсом:</b></p>
-                   <ul>
-                   <li>* выложить проект в открытый доступ (есть разные варианты, например gitlab pages и подобные подходы)</li>
-                   <li>* можно добавить интерактив (слайдеры, анимации и т.п.)</li>
-                   </ul>
-                   <b>Крайний срок - 8 апреля</b>`
+     "title": "issue1",
+     "description": "<p><b>Задание №1 Верстка</b></p>"
   },
-  {
-    "title": "second issue",
-    "description": "description"
-  },
-  {
-    "title": "third",
-    "description": "third_repo"
-  }
 ]
 ```
 

@@ -15,7 +15,7 @@ const polls: IPoll[] = [{
     value: new CreateIssues()
 },
 {
-    name: 'Удаление всех репозиториев из группы',
+    name: `Удаление всех репозиториев по префиксу ${process.env['PREFIX']}`,
     value: new DeleteRepositories()
 }]
 

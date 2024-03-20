@@ -6,6 +6,7 @@ import {IStudent} from "../../common/types/students";
 import {FileProvider} from "../../providers/file";
 import {validAccessLevel} from "../../common/enum/access-level";
 import {IMaintainer, IMaintainerLogin} from "../../common/types/maintainer";
+import {GitLabError} from "../../common/interfaces/error";
 
 export class CreateRepositories extends BaseStrategy implements IStrategy {
     private readonly students: FileProvider;
@@ -22,11 +23,10 @@ export class CreateRepositories extends BaseStrategy implements IStrategy {
         try {
             students = await this.students.readJson<IStudent[]>();
             maintainersLogin = await this.maintainers.readJson<IMaintainerLogin[]>();
-            // todo: добавить типы ошибок и обработку
-            // @ts-ignore
-        } catch(e: any) {
-            await logger.addError(e.message);
-            throw e;
+        } catch(e) {
+            const error = e as Error;
+            await logger.addError(error.message);
+            throw error;
         }
 
         let maintainers: IMaintainer[] = [];
@@ -37,23 +37,26 @@ export class CreateRepositories extends BaseStrategy implements IStrategy {
             throw e;
         }
 
-        const repos = await this.gitLab.getRepositories(this.groupId);
+        const repos = await this.getRepositories();
         for(let student of students){
-            const repository = await this.createRepository(student.repository, repos);
+            const repository = await this.createRepository(`${this.prefix}${student.repository}`, repos, this.groupId);
+            // await this.delay(100);
             if(repository){
                 const members = await this.getMembersByProject(repository.id, repository.name);
                 await this.addDeveloper(repository, student.login, members);
                 await this.addMaintainers(repository, maintainers, members);
+                // await this.delay(100);
             }
         }
     }
 
     /**
      * Создание репозитория
-     * @param name
-     * @param repos
+     * @param name - имя репозитория
+     * @param groupId - Id группы
+     * @param repos - список уже созданных репозиториев
      */
-    private async createRepository(name: string, repos: IProjectDto[]){
+    private async createRepository(name: string, repos: IProjectDto[], groupId?: number){
         const repository = repos.find(item => item.name === name);
         if(repository){
             await logger.repositoryExists(repository);
@@ -63,14 +66,16 @@ export class CreateRepositories extends BaseStrategy implements IStrategy {
             try {
                 const createdRepository = await this.gitLab.createRepository({
                     name,
-                    namespace_id: this.groupId,
+                    namespace_id: groupId,
                     approvals_before_merge: 1
                 });
                 await this.setProtectedBranchRules(createdRepository.id);
                 await logger.addRepository(createdRepository);
                 return createdRepository;
-            } catch {
-                await logger.addError(`Не удалось создать репозиторий ${name}`);
+
+            } catch (e: unknown) {
+                const error = e as GitLabError;
+                await logger.addError(`Не удалось создать репозиторий ${name}. ${error.generalMessage}`);
             }
         }
     }
@@ -84,11 +89,11 @@ export class CreateRepositories extends BaseStrategy implements IStrategy {
             await this.gitLab.setProtectedBranch(repositoryId, {
                 name: this.defaultBranch,
             })
-        // todo: поправить
-        // @ts-ignore
-        } catch(e: any) {
-            // todo: сделать нормальную обработку ошибок на уровне httpclient
-            console.log(`${e?.response?.status} ${e?.response?.statusText} ${e?.response?.data?.message}`);
+        } catch(e: unknown) {
+            const error = e as GitLabError;
+            if(error.status !== 409){
+                await logger.addError(error.generalMessage);
+            }
         }
     }
 
@@ -127,8 +132,9 @@ export class CreateRepositories extends BaseStrategy implements IStrategy {
                     userId: maintainer.id
                 });
                 await logger.addMember(maintainer.id, maintainer.login, validAccessLevel.maintainer);
-            }catch {
-                await logger.addError(`Не удалось добавить мейнтейнера ${maintainer.login} (maintainer) в репозиторий ${repository.name}`)
+            } catch(e) {
+                const error = e as GitLabError;
+                await logger.addError(`Не удалось добавить мейнтейнера ${maintainer.login} (maintainer) в репозиторий ${repository.name}. ${error.generalMessage}`)
             }
         }
     }
@@ -153,8 +159,9 @@ export class CreateRepositories extends BaseStrategy implements IStrategy {
             });
             await logger.addMember(userId, login, validAccessLevel.developer);
             return;
-        } catch {
-            await logger.addError(`Не удалось добавить девелопера ${login} (developer) в репозиторий ${repository.name}`)
+        } catch(e) {
+            const error = e as GitLabError;
+            await logger.addError(`Не удалось добавить девелопера ${login} (developer) в репозиторий ${repository.name}. ${error.generalMessage}`)
         }
     }
 
@@ -167,8 +174,9 @@ export class CreateRepositories extends BaseStrategy implements IStrategy {
         try {
             const member = await this.gitLab.getMembersByProject(repositoryId);
             return member.map(m => m.id);
-        } catch {
-            await logger.addError(`Не удалось получить список участников для репозитория ${repositoryName}`);
+        } catch(e) {
+            const error = e as GitLabError;
+            await logger.addError(`Не удалось получить список участников для репозитория ${repositoryName}. ${error.generalMessage}`);
             return [];
         }
     }

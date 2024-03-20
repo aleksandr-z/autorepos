@@ -2,6 +2,7 @@ import {BaseStrategy} from "./base-strategy";
 import {IProjectDto} from "../../common/dto/project";
 import {logger} from "../../providers/logger/logger";
 import inquirer from "inquirer";
+import {GitLabError} from "../../common/interfaces/error";
 
 /**
  * Удаление всех репозиториев из группы
@@ -32,7 +33,7 @@ export class DeleteRepositories extends BaseStrategy {
             try {
                 let projects:IProjectDto[] = [];
                 try {
-                    projects = await this.gitLab.getProjectsFromGroup(this.groupId);
+                    projects = await this.getRepositories();
                 } catch(e){
                     await logger.addError("Не удалось получить список проектов из группы");
                     throw e;
@@ -42,9 +43,9 @@ export class DeleteRepositories extends BaseStrategy {
                     try {
                         await this.gitLab.deleteProject(project.id);
                         await logger.addSuccess(`Репозиторий ${project.name} успешно удален`);
-                    // @ts-ignore
-                    } catch(e: any) {
-                        await logger.addError(e.response?.data?.message);
+                    } catch(e) {
+                        const error = e as GitLabError;
+                        await logger.addError(error.generalMessage);
                     }
                 }
             } catch(e){

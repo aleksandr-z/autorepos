@@ -1,7 +1,8 @@
-import axios, {AxiosInstance, AxiosRequestConfig, AxiosError, CreateAxiosDefaults} from 'axios';
+import axios, {AxiosInstance, AxiosRequestConfig, CreateAxiosDefaults} from 'axios';
 import { IHttpClient } from "../common/interfaces/http-client";
 import "dotenv/config.js";
 import {config} from "./config";
+
 
 class HttpClient implements IHttpClient {
     private readonly axios: AxiosInstance;
@@ -45,11 +46,6 @@ class HttpClient implements IHttpClient {
         } catch(e) {
             throw e;
         }
-    }
-
-    private handleError(e: AxiosError){
-        // console.warn('Ошибка: ', e.response.data);
-        return e.response;
     }
 }
 

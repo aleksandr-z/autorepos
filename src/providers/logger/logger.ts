@@ -5,7 +5,7 @@ import {ILogger} from "../../common/interfaces/logger";
 import {IProjectDto} from "../../common/dto/project";
 import {validAccessLevel} from "../../common/enum/access-level";
 
-export class Logger implements ILogger{
+export class Logger implements ILogger {
     loggers: BaseLogger[];
 
     constructor() {

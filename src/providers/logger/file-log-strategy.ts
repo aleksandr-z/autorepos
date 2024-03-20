@@ -9,6 +9,6 @@ export class FileLogStrategy implements ILoggerStrategy{
     }
 
     async log(buffer: string){
-        await this.fileProvider.write(buffer);
+        await this.fileProvider.write(buffer  + '\n');
     }
 }

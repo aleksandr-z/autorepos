@@ -17,34 +17,30 @@ export class BaseLogger implements ILogger{
     }
 
     async addIssue(issueName: string, repositoryName: string) {
-        await this.update(`Успех. Добавлена задача: ${issueName} в репозиторий: ${repositoryName}` + '\n');
+        await this.update(`Успех. Добавлена задача: ${issueName} в репозиторий: ${repositoryName}`);
     }
 
     async addRepository(repository: IProjectDto) {
-        await this.update(`Успех. Создан репозиторий: ${repository.name} в группе: ${repository.namespace.name}` + '\n');
+        await this.update(`Успех. Создан репозиторий: ${repository.name} в группе: ${repository.namespace.name}`);
     }
 
     async repositoryExists(repository: IProjectDto){
-        await this.update(`Успех. Получен существующий репозиторий: ${repository.name} в группе: ${repository.namespace.name}` + '\n');
+        await this.update(`Успех. Получен существующий репозиторий: ${repository.name} в группе: ${repository.namespace.name}`);
     }
 
     async addMember(userId: number, repositoryName: string, access_level: validAccessLevel){
-        await this.update(`Успех. Добавлен участник репозитория: ${repositoryName} с userId: ${userId}, с ролью ${validAccessLevel[access_level]}` + '\n');
+        await this.update(`Успех. Добавлен участник репозитория: ${repositoryName} с userId: ${userId}, с ролью ${validAccessLevel[access_level]}`);
     }
 
     async memberExists(userId: number, repositoryName: string, access_level: validAccessLevel){
-        await this.update(`Успех. Пользователь уже является участником: ${repositoryName} с userId: ${userId}, с ролью ${validAccessLevel[access_level]}` + '\n');
+        await this.update(`Успех. Пользователь уже является участником: ${repositoryName} с userId: ${userId}, с ролью ${validAccessLevel[access_level]}`);
     }
 
     async addError(text: string){
-        await this.update(`Ошибка: ${text}` + '\n');
+        await this.update(`Ошибка: ${text}`);
     }
 
     async addSuccess(text: string){
-        await this.update(`${text}` + '\n');
-    }
-
-    get buffer(){
-        return this._buffer;
+        await this.update(`${text}`);
     }
 }

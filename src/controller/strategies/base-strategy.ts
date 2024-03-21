@@ -24,8 +24,13 @@ export abstract class BaseStrategy {
      * Получение всех репозиториев и фильтрация их по префиксу
      */
     async getRepositories(){
-        const allRepositories = await this.gitLab.getRepositories();
-        return allRepositories.filter(repository => repository.name.startsWith(this.prefix));
+        try {
+            const allRepositories = await this.gitLab.getRepositories();
+            return allRepositories.filter(repository => repository.name.startsWith(this.prefix));
+        } catch {
+            throw new Error('Ошибка получения списка существующих репозиториев')
+        }
+
     }
 
     /**

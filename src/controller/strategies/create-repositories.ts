@@ -7,10 +7,18 @@ import {FileProvider} from "../../providers/file";
 import {validAccessLevel} from "../../common/enum/access-level";
 import {IMaintainer, IMaintainerLogin} from "../../common/types/maintainer";
 import {GitLabError} from "../../common/interfaces/error";
+import {IRepositoryCounter} from "../../common/types/counter";
 
 export class CreateRepositories extends BaseStrategy implements IStrategy {
     private readonly students: FileProvider;
     private readonly maintainers: FileProvider;
+    private counter: IRepositoryCounter = {
+        allRepositories: 0,
+        developersError: [],
+        maintainersError: [],
+        createdError: [],
+        existing: []
+    }
     constructor() {
         super();
         this.students = new FileProvider('students.json');
@@ -18,10 +26,18 @@ export class CreateRepositories extends BaseStrategy implements IStrategy {
     }
 
     async runProcess(){
+        this.counter = {
+            allRepositories: 0,
+            developersError: [],
+            maintainersError: [],
+            createdError: [],
+            existing: []
+        };
         let maintainersLogin: IMaintainerLogin[] = [];
         let students: IStudent[] = [];
         try {
             students = await this.students.readJson<IStudent[]>();
+            this.counter.allRepositories = students.length;
             maintainersLogin = await this.maintainers.readJson<IMaintainerLogin[]>();
         } catch(e) {
             const error = e as Error;
@@ -48,6 +64,7 @@ export class CreateRepositories extends BaseStrategy implements IStrategy {
                 await this.delay(100);
             }
         }
+        await logger.addSuccess(`\nВсего репозиториев: ${this.counter.allRepositories}\nСуществующие: ${this.counter.existing.join(', ') || 0}\nОшибка создания репозитория: ${this.counter.createdError.join(', ') || 0}\nОшибка добавления developer: ${this.counter.developersError.join(', ') || 0}\nОшибка добавления maintainer: ${this.counter.maintainersError.join(', ') || 0}\n`);
     }
 
     /**
@@ -60,6 +77,7 @@ export class CreateRepositories extends BaseStrategy implements IStrategy {
         const repository = repos.find(item => item.name === name);
         if(repository){
             await logger.repositoryExists(repository);
+            this.counter.existing.push(repository.name);
             await this.setProtectedBranchRules(repository.id)
             return repository;
         } else {
@@ -75,6 +93,7 @@ export class CreateRepositories extends BaseStrategy implements IStrategy {
 
             } catch (e: unknown) {
                 const error = e as GitLabError;
+                this.counter.createdError.push(name);
                 await logger.addError(`Не удалось создать репозиторий ${name}. ${error.generalMessage}`);
             }
         }
@@ -134,6 +153,7 @@ export class CreateRepositories extends BaseStrategy implements IStrategy {
                 await logger.addMember(maintainer.id, maintainer.login, validAccessLevel.maintainer);
             } catch(e) {
                 const error = e as GitLabError;
+                this.counter.maintainersError.push(repository.name);
                 await logger.addError(`Не удалось добавить мейнтейнера ${maintainer.login} (maintainer) в репозиторий ${repository.name}. ${error.generalMessage}`)
             }
         }
@@ -161,6 +181,7 @@ export class CreateRepositories extends BaseStrategy implements IStrategy {
             return;
         } catch(e) {
             const error = e as GitLabError;
+            this.counter.developersError.push(repository.name);
             await logger.addError(`Не удалось добавить девелопера ${login} (developer) в репозиторий ${repository.name}. ${error.generalMessage}`)
         }
     }

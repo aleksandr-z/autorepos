@@ -190,6 +190,5 @@ export class GitlabProvider {
             return `Статус: ${e.status} - ${e.statusText}, сообщение: ${e.data.base.join(', ')}`;
         }
         return `Статус: ${e.status} - ${e.statusText}, сообщение: ${e.data.message}`;
-
     }
 }

@@ -6,9 +6,17 @@ import {IIssueDataFile} from "../../common/types/issue";
 import {issueTypes} from "../../common/params/issue";
 import {GitLabError} from "../../common/interfaces/error";
 import {IIssuesCounter} from "../../common/types/counter";
+import inquirer from "inquirer";
+import {IStudent} from "../../common/types/students";
+
+const enum ISSUES_ENUM {
+    ALL_REPOSITORIES = 'ALL_REPOSITORIES',
+    FROM_FILE = 'FROM_FILE'
+}
 
 export class CreateIssues extends BaseStrategy implements IStrategy {
     private issues: FileProvider;
+    private students: FileProvider;
     private counter: IIssuesCounter = {
         allRepositories: 0,
         existing: [],
@@ -18,9 +26,27 @@ export class CreateIssues extends BaseStrategy implements IStrategy {
     constructor() {
         super();
         this.issues = new FileProvider('issues.json');
+        this.students = new FileProvider('students.json');
     }
 
     async runProcess(){
+        const { startCreating } = await inquirer.prompt([
+            {
+                name: 'startCreating',
+                message: 'Выберите вариант создания задач',
+                type: 'list',
+                choices: [
+                    {
+                        name: 'Задачи для всех репозиториев с префиксом ' + this.prefix,
+                        value: ISSUES_ENUM.ALL_REPOSITORIES
+                    },
+                    {
+                        name: 'Задачи для репозиториев из файла students.json',
+                        value: ISSUES_ENUM.FROM_FILE
+
+                    }],
+            }
+        ]);
         this.counter = {
             allRepositories: 0,
             existing: [],
@@ -35,7 +61,21 @@ export class CreateIssues extends BaseStrategy implements IStrategy {
             throw e;
         }
         // получаем список репозиториев и отсеиваем по префиксу
-        const repositories = await this.getRepositories();
+        let repositories = await this.getRepositories();
+
+        if(startCreating === ISSUES_ENUM.FROM_FILE){
+            let students: IStudent[] = [];
+            try {
+                students = await this.students.readJson<IStudent[]>();
+            } catch(e) {
+                const error = e as Error;
+                await logger.addError(error.message);
+                throw error;
+            }
+            const repositoriesFromFile = students.map(item => this.prefix + item.repository);
+            repositories = repositories.filter(item => repositoriesFromFile.includes(item.name))
+        }
+
         this.counter.allRepositories = repositories.length;
         for(let repository of repositories){
             // получаем список задач и отсеиваем, чтоб не создать с одинаковым title

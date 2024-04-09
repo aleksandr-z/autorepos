@@ -21,7 +21,7 @@ export class GitlabProvider {
      */
     async getRepositories(): Promise<IProjectDto[]>{
         try {
-            return await this.httpClient.get<IProjectDto[]>(`/projects?owned=true`);
+            return await this.httpClient.get<IProjectDto[]>(`/projects?owned=true&per_page=100`);
         } catch(e: unknown){
             throw this.handleError(e as AxiosError);
         }
@@ -190,6 +190,5 @@ export class GitlabProvider {
             return `Статус: ${e.status} - ${e.statusText}, сообщение: ${e.data.base.join(', ')}`;
         }
         return `Статус: ${e.status} - ${e.statusText}, сообщение: ${e.data.message}`;
-
     }
 }
